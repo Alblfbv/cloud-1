@@ -1,55 +1,63 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: nginx-deployment
+  name: app
   labels:
-    app: nginx
     tier: backend
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: nginx
       tier: backend
   template:
     metadata:
       labels:
-        app: nginx
         tier: backend
     spec:
       volumes:
-      - name: code
-        persistentVolumeClaim:
-          claimName: code
-      - name: config
+      - name: nginx-conf
         configMap:
           name: nginx-conf
           items:
           - key: config
             path: site.conf 
+      - name: static-assets
+        emptyDir: {}
+      imagePullSecrets:
+      - name: dockerhub-secret
       containers:
+      - name: php
+        image: allefebv/cloud-1:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9000
+        volumeMounts:
+        - name: static-assets
+          mountPath: /assets-copy
+        lifecycle:
+          postStart:
+            exec:
+              command: ["/bin/sh", "-c", "cp -r /code/public/* /assets-copy/"]
       - name: nginx
         image: nginx:latest
         ports:
         - containerPort: 80
         volumeMounts:
-        - name: config
+        - name: nginx-conf
           mountPath: /etc/nginx/conf.d
-        - name: code
-          mountPath: /code
+        - name: static-assets
+          mountPath: /code/public/
 
 ---
 
 apiVersion: v1
 kind: Service
 metadata:
-  name: nginx-service
+  name: app-service
   labels:
-    app: nginx
     tier: backend
 spec:
   selector:
-    app: nginx
     tier: backend
   type: LoadBalancer
   ports:
