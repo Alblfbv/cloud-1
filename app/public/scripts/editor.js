@@ -14,27 +14,31 @@ var img;
 
 document.addEventListener('DOMContentLoaded', () => {
     importNode.addEventListener('change', fileImport);
+
+    saveButton.addEventListener("click", function() {
+        toSendContext.clearRect(0, 0, toSend.width, toSend.height);
+        toSendContext.drawImage(background, 0, 0, 480, 270);
+        img = toSend.toDataURL("image/jpg");
+        createImageMontage({img:img, layer:activeLayerId, width: overlay.width, height: overlay.height})
+            .then((json) => {
+                addPreview(json);
+            })
+            .catch();
+    });
 });
 
-navigator.getMedia = ( navigator.getUserMedia ||
-    navigator.webkitGetUserMedia ||
-    navigator.mozGetUserMedia ||
-    navigator.msGetUserMedia);
-
-navigator.getMedia(
-    {video: { width: 480, height: 270 }},
-    (stream) => {
-        background.srcObject = stream;
-        userHasWebcam = true;
-        getLayers();
-        document.getElementById('savetooltip').innerHTML = 'Please select a filter';
-    },
-    () => { 
-        userHasWebcam = false;
-        document.getElementById('selectcam').style.display = 'none';
-        document.getElementById('savetooltip').innerHTML = 'Please import an image';
-    }
-);
+navigator && navigator.mediaDevices && navigator.mediaDevices.getUserMedia({video: { width: 480, height: 270 }})
+.then((stream) => {
+    background.srcObject = stream;
+    userHasWebcam = true;
+    getLayers();
+    document.getElementById('savetooltip').innerHTML = 'Please select a filter';
+})
+.catch((error) => {
+    userHasWebcam = false;
+    document.getElementById('selectcam').style.display = 'none';
+    document.getElementById('savetooltip').innerHTML = 'Please import an image';
+})
 
 function getLayers() {
     fetchApi(
@@ -158,14 +162,3 @@ const createImageMontage = (details) => {
             body: details,
         });
     };
-
-saveButton.addEventListener("click", function() {
-    toSendContext.clearRect(0, 0, toSend.width, toSend.height);
-    toSendContext.drawImage(background, 0, 0, 480, 270);
-    img = toSend.toDataURL("image/jpg");
-    createImageMontage({img:img, layer:activeLayerId, width: overlay.width, height: overlay.height})
-        .then((json) => {
-            addPreview(json);
-        })
-        .catch();
-});
