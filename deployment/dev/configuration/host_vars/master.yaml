@@ -1,0 +1,4 @@
+ansible_port: "2222"
+node_ip: "192.168.50.10"
+node_name: "master"
+pod_network: "192.168.100.0/16"

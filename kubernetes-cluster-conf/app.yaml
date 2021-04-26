@@ -23,6 +23,9 @@ spec:
             path: site.conf 
       - name: static-assets
         emptyDir: {}
+      - name: images-volume
+        persistentVolumeClaim:
+          claimName: images-pvc
       imagePullSecrets:
       - name: dockerhub-secret
       containers:
@@ -33,7 +36,9 @@ spec:
         - containerPort: 9000
         volumeMounts:
         - name: static-assets
-          mountPath: /assets-copy
+          mountPath: "/assets-copy"
+        - name: images-volume
+          mountPath: "/code/userImages/"
         lifecycle:
           postStart:
             exec:

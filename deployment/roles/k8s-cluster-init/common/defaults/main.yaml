@@ -1,0 +1,22 @@
+https_packages:
+  - ca-certificates
+  - curl
+  - apt-transport-https
+
+gpg_keys:
+  - https://packages.cloud.google.com/apt/doc/apt-key.gpg
+  - https://download.docker.com/linux/ubuntu/gpg
+
+apt_repositories:
+  - "deb https://apt.kubernetes.io/ kubernetes-xenial main"
+  - "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
+
+docker_services:
+  - docker-ce
+  - docker-ce-cli
+  - containerd.io
+
+kubernetes_services:
+  - kubeadm
+  - kubelet
+  - kubectl

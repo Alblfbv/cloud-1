@@ -1,0 +1,48 @@
+- name: Disable swap permanently
+  ansible.posix.mount:
+    name: "{{ item }}"
+    fstype: swap
+    state: absent
+  loop:
+    - swap
+    - none
+
+- name: Disable swap for running machine
+  ansible.builtin.command:
+    cmd: "swapoff -a"
+  when: ansible_swaptotal_mb > 0
+
+- name: install packages needed to use Kubernetes apt repository
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ https_packages }}"
+
+- name: Add docker and google gpg keys
+  ansible.builtin.apt_key:
+    url: "{{ item }}"
+    state: present
+  loop: "{{ gpg_keys }}"
+
+- name: Add google and docker apt repository
+  ansible.builtin.apt_repository:
+    repo: "{{ item }}"
+    state: present
+  loop: "{{ apt_repositories }}"
+  notify:
+    - docker_start
+
+- name: Install docker services
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ docker_services }}"
+
+- name: Install kubernetes services
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ kubernetes_services }}"

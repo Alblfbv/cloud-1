@@ -1,0 +1,14 @@
+- name: k8s-cluster-init-master
+  hosts: masters
+  become: yes
+  roles:
+    - {role: k8s-cluster-init/masters}
+
+- name: k8s-cluster-init-worker
+  hosts: workers
+  become: yes
+  roles:
+    - {role: k8s-cluster-init/workers}
+
+# - name: k8s-app-deploy
+#   hosts: all

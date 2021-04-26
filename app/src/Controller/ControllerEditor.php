@@ -91,7 +91,7 @@ class ControllerEditor {
 
 		$imgId = (int)current($this->_imageRepository->getBiggestId()) + 1;
 		$imgName = 'image_' . $imgId . '.jpg';
-		$imgPath = '/data/userImages/'.$imgName;
+		$imgPath = '/userImages/'.$imgName;
 		$img = new Image(array('pathToImage' => $imgPath, 'userId' => $_SESSION['logged']));
 		$this->_imageRepository->add($img);
 		file_put_contents($_SERVER['DOCUMENT_ROOT'] . $imgPath, $imgUrl);

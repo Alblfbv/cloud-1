@@ -14,9 +14,16 @@ spec:
       labels:
         app: mysql
     spec:
+      volumes:
+      - name: db-volume
+        persistentVolumeClaim:
+          claimName: mysql-pvc
       containers:
       - name: mysql
         image: mysql:5.7
+        volumeMounts:
+        - name: db-volume
+          mountPath: "/var/lib/mysql/"
         ports:
         - containerPort: 3306
         env:
@@ -30,7 +37,6 @@ spec:
             configMapKeyRef:
               name: mysql-configmap
               key: mysql-database
-          value: 
 
 ---
 
