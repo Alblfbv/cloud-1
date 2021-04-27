@@ -2,8 +2,8 @@ all:
   children:
     masters:
       hosts:
-        worker-1:
-        worker-2:
+        master:
     workers:
       hosts:
-        master:
+        worker-1:
+        worker-2:

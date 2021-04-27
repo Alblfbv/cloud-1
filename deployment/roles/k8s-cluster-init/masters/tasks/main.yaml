@@ -1,0 +1,53 @@
+- name: Create kubernetes cluster with kubeadm tool
+  become: yes
+  command:
+    cmd: kubeadm init --ignore-preflight-errors=all --apiserver-advertise-address="{{ node_ip }}" --cri-socket /run/containerd/containerd.sock --apiserver-cert-extra-sans="{{ node_ip }}"  --node-name="{{ node_name }}" --pod-network-cidr={{ pod_network }}
+
+- name: Creating .kube directory
+  ansible.builtin.file:
+    path: $HOME/.kube/
+    state: directory
+    mode: 0755
+
+- name: Configuring users cluster access
+  become: yes
+  copy:
+    src: /etc/kubernetes/admin.conf
+    dest: /home/vagrant/.kube/config
+    remote_src: yes
+    owner: vagrant
+
+- name: Install CNI (flannel) for pod networking
+  ansible.builtin.command:
+    argv: 
+      - kubectl
+      - apply
+      - -f
+      - https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+
+- name: Generate join command
+  become: yes
+  ansible.builtin.command:
+    argv:
+      - kubeadm
+      - token
+      - create
+      - --print-join-command
+  register: join_command
+
+- name: Debug1
+  become: yes
+  ansible.builtin.debug:
+    var:
+      - "join_command.stdout_lines[0]"
+  tags:
+    - test
+
+- name: Debug2
+  become: yes
+  ansible.builtin.debug:
+    var:
+      - "hostvars['master'].join_command.stdout_lines[0]"
+      - "join_command"
+  tags:
+    - test

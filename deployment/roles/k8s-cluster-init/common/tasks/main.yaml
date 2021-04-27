@@ -1,3 +1,10 @@
+# - name: Add ansible user
+#   ansible.builtin.user:
+#     become: yes
+#     name: ansible
+#     state: present
+#     create_home: yes
+
 - name: Disable swap permanently
   ansible.posix.mount:
     name: "{{ item }}"
@@ -12,37 +19,66 @@
     cmd: "swapoff -a"
   when: ansible_swaptotal_mb > 0
 
-- name: install packages needed to use Kubernetes apt repository
+- name: Install packages needed to use apt over https
+  become: yes
   ansible.builtin.apt:
     name: "{{ item }}"
     state: present
     update_cache: yes
   loop: "{{ https_packages }}"
 
-- name: Add docker and google gpg keys
+- name: Add docker/google repositories gpg keys
+  become: yes
   ansible.builtin.apt_key:
     url: "{{ item }}"
     state: present
   loop: "{{ gpg_keys }}"
 
 - name: Add google and docker apt repository
+  become: yes
   ansible.builtin.apt_repository:
     repo: "{{ item }}"
     state: present
   loop: "{{ apt_repositories }}"
+
+- name: Install k8s binaries
+  become: yes
+  ansible.builtin.apt:
+    name: "{{ item }}"
+    state: present
+    update_cache: yes
+  loop: "{{ kubernetes_binaries }}"
   notify:
-    - docker_start
+  - containerd_restart
 
-- name: Install docker services
-  ansible.builtin.apt:
+- name: Activate needed kernel modules
+  become: yes
+  community.general.modprobe:
     name: "{{ item }}"
     state: present
-    update_cache: yes
-  loop: "{{ docker_services }}"
+  loop: "{{ kernel_modules }}"
 
-- name: Install kubernetes services
-  ansible.builtin.apt:
-    name: "{{ item }}"
+- name: update sysctl file
+  become: yes
+  blockinfile:
+    path: /etc/sysctl.conf
+    block: |
+      net.bridge.bridge-nf-call-iptables=1
+      net.ipv4.ip_forward=1
+      net.ipv6.conf.all.disable_ipv6 = 1
+  notify:
+  - sysctl_exec
+
+- name: Configure node ip
+  become: yes
+  lineinfile:
+    path: '/etc/systemd/system/kubelet.service.d/10-kubeadm.conf'
+    line: 'Environment="KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}"'
+    regexp: 'KUBELET_EXTRA_ARGS='
+    insertafter: EOF
     state: present
-    update_cache: yes
-  loop: "{{ kubernetes_services }}"
+  notify:
+    - kubelet_restart
+
+- name: Flush handlers
+  meta: flush_handlers

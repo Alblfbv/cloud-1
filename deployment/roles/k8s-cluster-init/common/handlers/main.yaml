@@ -1,10 +1,19 @@
-- name: docker_start
+- name: containerd_restart
+  become: yes
   service:
-    name: docker
-    state: started
+    name: containerd
+    state: restarted
 
 - name: kubelet_restart
+  become: yes
   service:
     name: kubelet
     state: restarted
     daemon_reload: yes
+
+- name: sysctl_exec
+  become: yes
+  ansible.builtin.command:
+    argv: 
+      - sysctl
+      - --system

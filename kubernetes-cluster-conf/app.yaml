@@ -64,7 +64,7 @@ metadata:
 spec:
   selector:
     tier: backend
-  type: LoadBalancer
+  type: NodePort
   ports:
     - protocol: TCP
       port: 80

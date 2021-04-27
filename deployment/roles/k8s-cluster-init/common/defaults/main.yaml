@@ -11,12 +11,12 @@ apt_repositories:
   - "deb https://apt.kubernetes.io/ kubernetes-xenial main"
   - "deb [arch=amd64] https://download.docker.com/linux/ubuntu focal stable"
 
-docker_services:
-  - docker-ce
-  - docker-ce-cli
-  - containerd.io
-
-kubernetes_services:
+kubernetes_binaries:
   - kubeadm
   - kubelet
   - kubectl
+  - containerd
+
+kernel_modules:
+  - overlay
+  - br_netfilter
