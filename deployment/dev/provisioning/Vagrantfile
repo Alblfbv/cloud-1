@@ -7,14 +7,15 @@ MASTER_MEM = 2048                   # Amount of RAM for master
 MASTER_CPU = 1.8                    # Number of processors for master (Minimum value of 2 otherwise it will not work)
 MASTER_NAME="master"                # Master node name
 
+WORKER_MEM = 1024                   # Number of processors for workers
 WORKER_CPU = 1                      # Amount of RAM for workers
-WORKER_MEM = 1536                   # Number of processors for workers
 WORKER_NBR = 2                      # Number of workers node
 
 NODE_NETWORK_BASE = "192.168.50"    # First three octets of the IP address that will be assign to all type of nodes
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false
+    config.vm.base_mac = nil
 
     # Master node config
     config.vm.define MASTER_NAME do |master|

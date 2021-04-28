@@ -21,7 +21,7 @@ export const successMessages = {
 
 export const POST_METHOD = "POST";
 
-const TIMEOUT = 5000;
+const TIMEOUT = 20000;
 
 export function fetchApi(url, args) {
 	return new Promise((resolve, reject) => {

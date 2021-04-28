@@ -1,6 +1,6 @@
 - name: Joining to the cluster
   become: yes
   command:
-    cmd: "{{ hostvars['master'].join_command.stdout_lines[0] }}"
+    cmd: "{{ hostvars['master'].join_command }}"
   tags:
     - test
