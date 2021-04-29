@@ -2,7 +2,7 @@ FROM php:7.2-fpm
 
 COPY ./app                              /code
 
-COPY ./docker-conf/xdebug.ini           /usr/local/etc/php/conf.d/xdebug.ini
+# COPY ./docker-conf/xdebug.ini           /usr/local/etc/php/conf.d/xdebug.ini
 COPY ./docker-conf/mail.ini             /usr/local/etc/php/conf.d/mail.ini
 COPY ./docker-conf/msmtprc              /etc/msmtprc
 COPY ./docker-conf/php-entrypoint.sh    /usr/local/bin

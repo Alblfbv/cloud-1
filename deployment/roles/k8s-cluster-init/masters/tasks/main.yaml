@@ -35,13 +35,64 @@
 - name: Install CNI (flannel) for pod networking
   import_tasks: networking.yaml
 
-# - name: Install CNI (flannel) for pod networking
-#   ansible.builtin.command:
-#     argv: 
-#       - kubectl
-#       - apply
-#       - -f
-#       - https://raw.githubusercontent.com/coreos/flannel/master/Documentation/kube-flannel.yml
+- name: Install Metallb - Step1
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - apply
+      - -f
+      - https://raw.githubusercontent.com/metallb/metallb/v0.9.6/manifests/namespace.yaml
+
+- name: Install Metallb - Step2
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - apply
+      - -f
+      - https://raw.githubusercontent.com/metallb/metallb/v0.9.6/manifests/metallb.yaml
+
+- name: Install Metallb - Step3
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - create
+      - secret
+      - generic
+      - -n
+      - metallb-system
+      - memberlist
+      - --from-literal=secretkey="$(openssl rand -base64 128)"
+
+- name: Add helm_key
+  become: yes
+  ansible.builtin.apt_key:
+    url: https://baltocdn.com/helm/signing.asc
+    state: present
+
+- name: Add helm apt repository
+  become: yes
+  ansible.builtin.apt_repository:
+    repo: deb https://baltocdn.com/helm/stable/debian/ all main
+    state: present
+
+- name: Install Helm
+  become: yes
+  ansible.builtin.apt:
+    name: helm
+    state: present
+    update_cache: yes
+
+- name: Install ingress-controller
+  become: yes
+  community.kubernetes.helm:
+    name: myingress
+    chart_ref: ingress-nginx/ingress-nginx
+    release_namespace: ingress-nginx
+    values:
+      kind: DaemonSet
+      hostNetwork: true
+      hostPort:
+        enabled: true
 
 - name: Generate join command
   become: yes

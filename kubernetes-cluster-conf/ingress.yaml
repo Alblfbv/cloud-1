@@ -1,0 +1,23 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: ingress-rules
+    annotations:
+      kubernetes.io/ingress.class: nginx
+spec:
+  rules:
+  - http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: app-service
+            port:
+              number: 80
+      - path: /db
+        backend:
+          service:
+            name: pma-service
+            port:
+              number: 80
+                

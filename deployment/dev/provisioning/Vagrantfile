@@ -9,7 +9,7 @@ MASTER_NAME="master"                # Master node name
 
 WORKER_MEM = 1024                   # Number of processors for workers
 WORKER_CPU = 1                      # Amount of RAM for workers
-WORKER_NBR = 2                      # Number of workers node
+WORKER_NBR = 1                      # Number of workers node
 
 NODE_NETWORK_BASE = "192.168.50"    # First three octets of the IP address that will be assign to all type of nodes
 
