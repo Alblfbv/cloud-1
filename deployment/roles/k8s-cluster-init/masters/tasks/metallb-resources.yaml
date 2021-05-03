@@ -1,0 +1,23 @@
+- name: Create Namespace
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Namespace
+      metadata:
+        name: metallb-system
+        labels:
+          app: metallb
+
+- name: Create metallb secret
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Secret
+      metadata:
+        name: memberlist
+        namespace: metallb-system
+      type: Opaque
+      data:
+        secretkey: nGZoSFnJ0DDxLfK/qMpzMQwmLWkvP+gfx3YkrB8ZXwPy6ICBKZMBr9/kqKV4tRpiq0G3Y8i3nBC+8Cd2p3HMS77xAalTeyN5leHzCznkzXiQByOHGPJKJIeRjcGbO5eZsz8II4CTrJMQBsJbdWhnU2HnJAFKHfmYOMRrrP5/lqw=

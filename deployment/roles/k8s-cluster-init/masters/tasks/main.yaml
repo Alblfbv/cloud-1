@@ -16,6 +16,7 @@
     dest: /home/vagrant/.kube/config
     remote_src: yes
     owner: vagrant
+    mode: 0700
 
 - name: Install pip3 for next task
   become: yes
@@ -36,12 +37,7 @@
   import_tasks: networking.yaml
 
 - name: Install Metallb - Step1
-  ansible.builtin.command:
-    argv:
-      - kubectl
-      - apply
-      - -f
-      - https://raw.githubusercontent.com/metallb/metallb/v0.9.6/manifests/namespace.yaml
+  import_tasks: metallb-resources.yaml
 
 - name: Install Metallb - Step2
   ansible.builtin.command:
@@ -51,29 +47,21 @@
       - -f
       - https://raw.githubusercontent.com/metallb/metallb/v0.9.6/manifests/metallb.yaml
 
-- name: Install Metallb - Step3
-  ansible.builtin.command:
-    argv:
-      - kubectl
-      - create
-      - secret
-      - generic
-      - -n
-      - metallb-system
-      - memberlist
-      - --from-literal=secretkey="$(openssl rand -base64 128)"
-
 - name: Add helm_key
   become: yes
   ansible.builtin.apt_key:
     url: https://baltocdn.com/helm/signing.asc
     state: present
+  tags:
+  - test
 
 - name: Add helm apt repository
   become: yes
   ansible.builtin.apt_repository:
     repo: deb https://baltocdn.com/helm/stable/debian/ all main
     state: present
+  tags:
+  - test
 
 - name: Install Helm
   become: yes
@@ -81,18 +69,36 @@
     name: helm
     state: present
     update_cache: yes
+  tags:
+  - test
+
+- name: Add ingress-nginx helm repository
+  become: yes
+  community.kubernetes.helm_repository:
+    name: ingress-nginx
+    repo_url: https://kubernetes.github.io/ingress-nginx
+    state: present
+  tags:
+  - test
 
 - name: Install ingress-controller
   become: yes
   community.kubernetes.helm:
-    name: myingress
-    chart_ref: ingress-nginx/ingress-nginx
-    release_namespace: ingress-nginx
+    name: ingress-nginx
+    namespace: ingress-nginx
+    state: present
+    chart_repo_url: https://kubernetes.github.io/ingress-nginx
+    update_repo_cache: yes
+    chart_ref: ingress-nginx
+    create_namespace: yes
     values:
       kind: DaemonSet
       hostNetwork: true
       hostPort:
         enabled: true
+    kubeconfig: /home/vagrant/.kube/config
+  tags:
+  - test
 
 - name: Generate join command
   become: yes
