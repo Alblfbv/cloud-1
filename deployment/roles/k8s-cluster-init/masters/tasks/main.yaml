@@ -25,7 +25,6 @@
     state: present
     update_cache: yes
 
-
 - name: Install OpenShift for Ansible k8s manipulations
   become: yes
   pip:
@@ -47,13 +46,22 @@
       - -f
       - https://raw.githubusercontent.com/metallb/metallb/v0.9.6/manifests/metallb.yaml
 
+- name: Disable taint on master for ingress-nginx installation
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - taint
+      - node
+      - master
+      - node-role.kubernetes.io/master:NoSchedule-
+
 - name: Add helm_key
   become: yes
   ansible.builtin.apt_key:
     url: https://baltocdn.com/helm/signing.asc
     state: present
   tags:
-  - test
+    - test
 
 - name: Add helm apt repository
   become: yes
@@ -61,7 +69,7 @@
     repo: deb https://baltocdn.com/helm/stable/debian/ all main
     state: present
   tags:
-  - test
+    - test
 
 - name: Install Helm
   become: yes
@@ -70,7 +78,7 @@
     state: present
     update_cache: yes
   tags:
-  - test
+    - test
 
 - name: Add ingress-nginx helm repository
   become: yes
@@ -79,18 +87,18 @@
     repo_url: https://kubernetes.github.io/ingress-nginx
     state: present
   tags:
-  - test
+    - test
 
 - name: Install ingress-controller
   become: yes
   community.kubernetes.helm:
-    name: ingress-nginx
-    namespace: ingress-nginx
+    name: my-ingress
     state: present
-    chart_repo_url: https://kubernetes.github.io/ingress-nginx
-    update_repo_cache: yes
-    chart_ref: ingress-nginx
+    namespace: ingress-nginx
     create_namespace: yes
+    update_repo_cache: yes
+    force: yes
+    chart_ref: ingress-nginx/ingress-nginx
     values:
       kind: DaemonSet
       hostNetwork: true
@@ -98,7 +106,7 @@
         enabled: true
     kubeconfig: /home/vagrant/.kube/config
   tags:
-  - test
+    - test
 
 - name: Generate join command
   become: yes
