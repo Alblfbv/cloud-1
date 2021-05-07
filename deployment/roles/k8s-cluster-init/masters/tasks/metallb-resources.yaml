@@ -27,14 +27,14 @@
     state: present
     definition:
       apiVersion: v1
-        kind: ConfigMap
-        metadata:
-          namespace: metallb-system
-          name: config
-        data:
-          config: |
-            address-pools:
-            - name: default
-              protocol: layer2
-              addresses:
-              - 192.168.50.240-192.168.50.250
+      kind: ConfigMap
+      metadata:
+        name: config
+        namespace: metallb-system
+      data:
+        config: |
+          address-pools:
+          - name: default
+            protocol: layer2
+            addresses:
+            - 192.168.50.240-192.168.50.250
