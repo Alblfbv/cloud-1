@@ -1,0 +1,48 @@
+- name: pma - deployment
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: apps/v1
+      kind: Deployment
+      metadata:
+        name: pma-deployment
+        namespace: default
+        labels:
+          app: pma
+      spec:
+        replicas: 1
+        selector:
+          matchLabels:
+            app: pma
+        template:
+          metadata:
+            labels:
+              app: pma
+          spec:
+            containers:
+              - name: pma
+                image: phpmyadmin/phpmyadmin
+                ports:
+                  - containerPort: 80
+                env:
+                  - name: PMA_HOST
+                    value: mysql-service
+                  - name: PMA_PORT
+                    value: "3306"
+
+- name: pma - service
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: Service
+      metadata:
+        name: pma-service
+        namespace: default
+      spec:
+        selector:
+          app: pma
+        ports:
+          - protocol: TCP
+            port: 80
+            targetPort: 80
