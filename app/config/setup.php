@@ -2,14 +2,14 @@
 
 require_once("database.php");
 
-try {
-    $db = new PDO($DB_DSN_EXISTS, $DB_USER, $DB_PASSWORD);
-    $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-    $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-    $db->exec("DROP DATABASE camagru");
-} catch (\Exception $e) {
-    echo $e->getMessage();
-}
+// try {
+//     $db = new PDO($DB_DSN_EXISTS, $DB_USER, $DB_PASSWORD);
+//     $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
+//     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+//     $db->exec("DROP DATABASE camagru");
+// } catch (\Exception $e) {
+//     echo $e->getMessage();
+// }
 
 $db = new PDO($DB_DSN_CREATE, $DB_USER, $DB_PASSWORD);
 $db->query("CREATE DATABASE IF NOT EXISTS " . $DB_NAME);
@@ -17,7 +17,7 @@ $db->query("use " . $DB_NAME);
 $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
 $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 
-$db->query("CREATE TABLE `user` (
+$db->query("CREATE TABLE IF NOT EXISTS `user` (
     id                      INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     username                TEXT NOT NULL,
     email                   TEXT NOT NULL,
@@ -28,7 +28,7 @@ $db->query("CREATE TABLE `user` (
     activationKey           CHAR(32) NOT NULL
 );");
 
-$db->query("CREATE TABLE `image` (
+$db->query("CREATE TABLE IF NOT EXISTS `image` (
     id                      INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     userId                  INTEGER NOT NULL,
     pathToImage             VARCHAR(255) NOT NULL UNIQUE,
@@ -36,7 +36,7 @@ $db->query("CREATE TABLE `image` (
     FOREIGN KEY (userId)    REFERENCES user(id) ON DELETE CASCADE
 );");
 
-$db->query("CREATE TABLE comment (
+$db->query("CREATE TABLE IF NOT EXISTS comment (
     id                      INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     userId                  INTEGER NOT NULL,
     imageId                 INTEGER NOT NULL,
@@ -46,7 +46,7 @@ $db->query("CREATE TABLE comment (
     FOREIGN KEY (imageId)   REFERENCES image(id) ON DELETE CASCADE
 );");
 
-$db->query("CREATE TABLE `like` (
+$db->query("CREATE TABLE IF NOT EXISTS `like` (
     userId                  INTEGER NOT NULL,
     imageId                 INTEGER NOT NULL,
     likeDate                TIMESTAMP DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -55,17 +55,15 @@ $db->query("CREATE TABLE `like` (
     PRIMARY KEY (userId, imageId)
 );");
 
-$db->query("CREATE TABLE layer (
+$db->query("CREATE TABLE IF NOT EXISTS layer (
     id                      INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
     pathToLayer             VARCHAR(255) NOT NULL UNIQUE
 );");
 
 $layers = scandir(dirname(__DIR__) . '/public/layers/');
 $req = $db->prepare("INSERT IGNORE INTO layer(pathToLayer) VALUES(:pathToLayer)");
-foreach($layers as $layer) {
-    if (strpos($layer, '.png') !== FALSE) {
+foreach ($layers as $layer) {
+    if (strpos($layer, '.png') !== false) {
         $req->execute(array('pathToLayer' => '/public/layers/' . $layer));
     }
 }
-
-?>
