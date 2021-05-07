@@ -15,46 +15,57 @@ spec:
         tier: backend
     spec:
       volumes:
-      - name: nginx-conf
-        configMap:
-          name: nginx-conf
-          items:
-          - key: config
-            path: site.conf 
-      - name: static-assets
-        emptyDir: {}
-      - name: images-volume
-        persistentVolumeClaim:
-          claimName: images-pvc
-      imagePullSecrets:
-      - name: dockerhub-secret
-      containers:
-      - name: php
-        image: allefebv/cloud-1:latest
-        imagePullPolicy: Always
-        ports:
-        - containerPort: 9000
-        volumeMounts:
-        - name: static-assets
-          mountPath: "/assets-copy"
-        - name: images-volume
-          mountPath: "/code/userImages/"
-        lifecycle:
-          postStart:
-            exec:
-              command: ["/bin/sh", "-c", "cp -r /code/public/* /assets-copy/"]
-      - name: nginx
-        image: nginx:latest
-        ports:
-        - containerPort: 80
-        volumeMounts:
         - name: nginx-conf
-          mountPath: /etc/nginx/conf.d
+          configMap:
+            name: nginx-conf
+            items:
+              - key: config
+                path: site.conf
         - name: static-assets
-          mountPath: /code/public/
+          emptyDir: {}
+        - name: images-volume
+          persistentVolumeClaim:
+            claimName: images-pvc
+      imagePullSecrets:
+        - name: dockerhub-secret
+      initContainers:
+        - name: init-php
+          image: alpine
+          volumeMounts:
+            - name: images-volume
+              mountPath: "/code/userImages/"
+          command:
+            - sh
+            - -c
+            - (chmod 777 /code/userImages; chgrp 33 /code/userImages)
+      containers:
+        - name: php
+          image: allefebv/cloud-1:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 9000
+          volumeMounts:
+            - name: static-assets
+              mountPath: "/assets-copy"
+            - name: images-volume
+              mountPath: "/code/userImages/"
+          lifecycle:
+            postStart:
+              exec:
+                command: ["/bin/sh", "-c", "cp -r /code/public/* /assets-copy/"]
+        - name: nginx
+          image: nginx:latest
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: nginx-conf
+              mountPath: /etc/nginx/conf.d
+            - name: static-assets
+              mountPath: /code/public/
+            - name: images-volume
+              mountPath: "/code/userImages/"
 
 ---
-
 apiVersion: v1
 kind: Service
 metadata:

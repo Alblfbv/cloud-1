@@ -21,10 +21,14 @@ data:
           include fastcgi_params;
           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
           fastcgi_param PATH_INFO $fastcgi_path_info;
-          fastcgi_param DOCUMENT_ROOT $document_root;
+          fastcgi_param DOCUMENT_ROOT /code;
       }
 
       location /public/ {
+        sendfile on;
+      }
+
+      location /userImages/ {
         sendfile on;
       }
 
@@ -35,6 +39,6 @@ data:
           include fastcgi_params;
           fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
           fastcgi_param PATH_INFO $fastcgi_path_info;
-          fastcgi_param DOCUMENT_ROOT $document_root;
+          fastcgi_param DOCUMENT_ROOT /code;
         }
     }
