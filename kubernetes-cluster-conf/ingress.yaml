@@ -5,6 +5,11 @@ metadata:
   annotations:
     kubernetes.io/ingress.class: nginx
 spec:
+  tls:
+    - hosts:
+        - camagru.com
+        - db.camagru.com
+      secretName: camagru-secret-tls
   rules:
     - host: camagru.com
       http:
