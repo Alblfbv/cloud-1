@@ -1,4 +1,4 @@
 #!/bin/bash
 
-(cd /code/config/ ; php config.php)
+(cd /code/config/ ; php setup.php)
 php-fpm
