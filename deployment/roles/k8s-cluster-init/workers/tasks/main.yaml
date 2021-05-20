@@ -2,5 +2,3 @@
   become: yes
   command:
     cmd: "{{ hostvars['master'].join_command }}"
-  tags:
-    - test

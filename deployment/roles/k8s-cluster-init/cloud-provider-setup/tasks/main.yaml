@@ -1,0 +1,7 @@
+- name: RBAC for cloud-controller-manager
+  command:
+    cmd: kubectl apply -f https://raw.githubusercontent.com/kubernetes/cloud-provider-aws/master/manifests/rbac.yaml
+
+- name: AWS cloud-controller-manager deployment
+  command:
+    cmd: kubectl apply -f https://raw.githubusercontent.com/kubernetes/cloud-provider-aws/master/manifests/aws-cloud-controller-manager-daemonset.yaml

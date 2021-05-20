@@ -1,4 +1,4 @@
-- name: Create Namespace
+- name: Metallb - Create Namespace
   community.kubernetes.k8s:
     state: present
     definition:
@@ -9,7 +9,7 @@
         labels:
           app: metallb
 
-- name: Create metallb secret
+- name: Metallb - Create secret
   community.kubernetes.k8s:
     state: present
     definition:
@@ -22,7 +22,7 @@
       data:
         secretkey: nGZoSFnJ0DDxLfK/qMpzMQwmLWkvP+gfx3YkrB8ZXwPy6ICBKZMBr9/kqKV4tRpiq0G3Y8i3nBC+8Cd2p3HMS77xAalTeyN5leHzCznkzXiQByOHGPJKJIeRjcGbO5eZsz8II4CTrJMQBsJbdWhnU2HnJAFKHfmYOMRrrP5/lqw=
 
-- name: Create metallb ConfigMap
+- name: Metallb - Create ConfigMap
   community.kubernetes.k8s:
     state: present
     definition:
@@ -38,3 +38,11 @@
             protocol: layer2
             addresses:
             - 192.168.50.240-192.168.50.250
+
+- name: Install Metallb - Step2
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - apply
+      - -f
+      - https://raw.githubusercontent.com/metallb/metallb/v0.9.6/manifests/metallb.yaml

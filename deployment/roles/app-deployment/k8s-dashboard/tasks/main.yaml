@@ -388,7 +388,7 @@
         tls:
           - secretName: tls-secret # NON-EXISTENT
         rules:
-          - host: dashboard.camagru.com
+          - host: dashboard.allefebv.click
             http:
               paths:
                 - path: /

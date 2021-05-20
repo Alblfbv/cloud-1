@@ -1,0 +1,51 @@
+- name: Disable taint on master for ingress-nginx installation
+  ansible.builtin.command:
+    argv:
+      - kubectl
+      - taint
+      - node
+      - master
+      - node-role.kubernetes.io/master:NoSchedule-
+
+- name: Add helm_key
+  become: yes
+  ansible.builtin.apt_key:
+    url: https://baltocdn.com/helm/signing.asc
+    state: present
+
+- name: Add helm apt repository
+  become: yes
+  ansible.builtin.apt_repository:
+    repo: deb https://baltocdn.com/helm/stable/debian/ all main
+    state: present
+
+- name: Install Helm
+  become: yes
+  ansible.builtin.apt:
+    name: helm
+    state: present
+    update_cache: yes
+
+- name: Add ingress-nginx helm repository
+  become: yes
+  community.kubernetes.helm_repository:
+    name: ingress-nginx
+    repo_url: https://kubernetes.github.io/ingress-nginx
+    state: present
+
+- name: Install ingress-controller
+  become: yes
+  community.kubernetes.helm:
+    name: my-ingress
+    state: present
+    namespace: ingress-nginx
+    create_namespace: yes
+    update_repo_cache: yes
+    force: yes
+    chart_ref: ingress-nginx/ingress-nginx
+    values:
+      kind: DaemonSet
+      hostNetwork: true
+      hostPort:
+        enabled: true
+    kubeconfig: "/home/{{ user }}/.kube/config"

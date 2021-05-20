@@ -1,0 +1,4 @@
+- name: Create kubernetes cluster with kubeadm tool
+  become: yes
+  command:
+    cmd: kubeadm init --ignore-preflight-errors=all --apiserver-advertise-address="{{ private_ip_address }}" --cri-socket /run/containerd/containerd.sock --apiserver-cert-extra-sans="{{ private_ip_address }}"  --node-name="{{ node_name }}" --pod-network-cidr={{ pod_network }}

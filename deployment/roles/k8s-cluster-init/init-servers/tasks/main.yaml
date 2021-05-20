@@ -42,7 +42,7 @@
     update_cache: yes
   loop: "{{ kubernetes_binaries }}"
   notify:
-  - containerd_restart
+    - containerd_restart
 
 - name: Activate needed kernel modules
   become: yes
@@ -60,14 +60,14 @@
       net.bridge.bridge-nf-call-iptables = 1
       net.ipv4.ip_forward = 1
   notify:
-  - sysctl_exec
+    - sysctl_exec
 
 - name: Configure node ip
   become: yes
   lineinfile:
-    path: '/etc/systemd/system/kubelet.service.d/10-kubeadm.conf'
-    line: 'Environment="KUBELET_EXTRA_ARGS=--node-ip={{ node_ip }}"'
-    regexp: 'KUBELET_EXTRA_ARGS='
+    path: "/etc/systemd/system/kubelet.service.d/10-kubeadm.conf"
+    line: 'Environment="KUBELET_EXTRA_ARGS=--node-ip={{ private_ip_address }} --cloud-provider=external"'
+    regexp: "KUBELET_EXTRA_ARGS="
     insertafter: EOF
     state: present
   notify:
