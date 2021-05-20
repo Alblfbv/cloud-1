@@ -7,3 +7,6 @@ all:
       hosts:
         worker-1:
         worker-2:
+    local_masters:
+      children:
+        masters:

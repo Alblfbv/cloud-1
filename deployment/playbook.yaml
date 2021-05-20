@@ -1,12 +1,66 @@
+- name: k8s-cluster-init-servers
+  hosts: all
+  roles:
+    - { role: k8s-cluster-init/init-servers }
+
+- name: k8s-cluster-init-update-hostnames
+  hosts: aws_ec2
+  roles:
+    - { role: k8s-cluster-init/update-hostname }
+
+- name: k8s-cluster-init-master-local
+  hosts: local_masters
+  roles:
+    - { role: k8s-cluster-init/masters-init-local }
+
+- name: k8s-cluster-init-master-cloud
+  hosts: cloud_masters
+  roles:
+    - { role: k8s-cluster-init/masters-init-cloud }
+
 - name: k8s-cluster-init-master
   hosts: masters
   roles:
-    - { role: k8s-cluster-init/masters }
+    - { role: k8s-cluster-init/masters-init }
+
+- name: k8s-cluster-init-cloud-provider
+  hosts: cloud_masters
+  roles:
+    - { role: k8s-cluster-init/cloud-provider-setup }
+
+- name: k8s-cluster-install-flannel
+  hosts: masters
+  roles:
+    - { role: k8s-cluster-init/masters-flannel }
+
+- name: k8s-cluster-masters-join
+  hosts: masters
+  roles:
+    - { role: k8s-cluster-init/masters-generate-join }
+  tags:
+    - join
 
 - name: k8s-cluster-init-worker
   hosts: workers
   roles:
     - { role: k8s-cluster-init/workers }
+  tags:
+    - join
+
+- name: k8s-cluster-masters-local-loadbalancer
+  hosts: local_masters
+  roles:
+    - { role: k8s-cluster-init/masters-metallb }
+
+- name: k8s-cluster-masters-local-ingress
+  hosts: local_masters
+  roles:
+    - { role: k8s-cluster-init/masters-ingress-local }
+
+- name: k8s-cluster-masters-cloud-ingress
+  hosts: cloud_masters
+  roles:
+    - { role: k8s-cluster-init/masters-ingress-cloud }
 
 - name: k8s-app-deploy
   hosts: masters
@@ -16,4 +70,4 @@
     - { role: app-deployment/phpmyadmin }
     - { role: app-deployment/camagru }
   tags:
-    - toto
+    - app

@@ -3,15 +3,15 @@
 # ####################################################################
 IMAGE_NAME = "ubuntu/focal64"       # Image to use
 
-MASTER_MEM = 2048                   # Amount of RAM for master
-MASTER_CPU = 2                      # Number of processors for master (Minimum value of 2 otherwise it will not work)
+MASTER_MEM = 2048                   # Amount of masters RAM
+MASTER_CPU = 2                      # Number of masters processors
 MASTER_NAME="master"                # Master node name
 
-WORKER_MEM = 1024                   # Number of processors for workers
-WORKER_CPU = 1                      # Amount of RAM for workers
+WORKER_MEM = 1024                   # Number of workers processors
+WORKER_CPU = 1                      # Amount of workers RAM
 WORKER_NBR = 2                      # Number of workers node
 
-NODE_NETWORK_BASE = "192.168.50"    # First three octets of the IP address that will be assign to all type of nodes
+NODE_NETWORK_BASE = "192.168.50"
 
 Vagrant.configure("2") do |config|
     config.ssh.insert_key = false

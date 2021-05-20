@@ -1,0 +1,3 @@
+ansible_user: "ubuntu"
+user: "ubuntu"
+network_interface: "eth0"

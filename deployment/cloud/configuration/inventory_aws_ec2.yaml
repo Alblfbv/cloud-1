@@ -1,0 +1,14 @@
+plugin: aws_ec2
+regions:
+  - eu-west-3
+filters:
+  tag:project: cloud-1
+keyed_groups:
+  - key: tags.group
+    separator: ""
+  - prefix: cloud
+    key: tags.group
+hostnames:
+  - tag:Name
+compose:
+  ansible_host: public_ip_address

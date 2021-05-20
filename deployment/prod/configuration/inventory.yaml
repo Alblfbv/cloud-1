@@ -1,8 +1,0 @@
-all:
-  children:
-    master:
-      hosts:
-        srv1:
-    node:
-      hosts:
-        srv[2:3]:

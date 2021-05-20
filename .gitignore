@@ -1,1 +1,4 @@
-deployment/dev/provisioning/.vagrant/
+deployment/local/provisioning/.vagrant/
+alban_accessKeys.csv
+deployment/cloud/provisioning/*
+!deployment/cloud/provisioning/main.tf
