@@ -2,15 +2,6 @@
 
 require_once("database.php");
 
-// try {
-//     $db = new PDO($DB_DSN_EXISTS, $DB_USER, $DB_PASSWORD);
-//     $db->setAttribute(PDO::ATTR_DEFAULT_FETCH_MODE, PDO::FETCH_ASSOC);
-//     $db->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
-//     $db->exec("DROP DATABASE camagru");
-// } catch (\Exception $e) {
-//     echo $e->getMessage();
-// }
-
 $db = new PDO($DB_DSN_CREATE, $DB_USER, $DB_PASSWORD);
 $db->query("CREATE DATABASE IF NOT EXISTS " . $DB_NAME);
 $db->query("use " . $DB_NAME);
