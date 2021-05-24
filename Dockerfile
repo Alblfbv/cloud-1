@@ -6,9 +6,11 @@ COPY ./docker-conf/mail.ini             /usr/local/etc/php/conf.d/mail.ini
 COPY ./docker-conf/msmtprc              /etc/msmtprc
 
 RUN apt upgrade && apt update && apt install -y libpng-dev
-RUN DEBIAN_FRONTEND=noninteractive apt install -y msmtp msmtp-mta
+RUN DEBIAN_FRONTEND=noninteractive apt install -y msmtp msmtp-mta zip vim
 
 RUN docker-php-ext-install pdo pdo_mysql gd
+
+COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
 # COPY ./docker-conf/xdebug.ini           /usr/local/etc/php/conf.d/xdebug.ini
 # RUN pecl install xdebug 
