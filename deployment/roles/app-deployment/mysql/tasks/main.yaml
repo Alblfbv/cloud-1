@@ -1,0 +1,128 @@
+- block:
+    - name: mysql - service
+      community.kubernetes.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Service
+          metadata:
+            name: mysql-service
+            namespace: default
+          spec:
+            selector:
+              app: mysql
+            ports:
+              - protocol: TCP
+                port: 3306
+                targetPort: 3306
+
+    - name: mysql - secret
+      community.kubernetes.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: Secret
+          metadata:
+            name: mysql-secret
+            namespace: default
+          type: Opaque
+          data:
+            mysql-root-password: cGFzc3dvcmQxMjM0
+
+    - name: mysql - volume
+      community.kubernetes.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: PersistentVolume
+          metadata:
+            name: mysql-pv
+            namespace: default
+            labels:
+              storage-tier: database
+          spec:
+            accessModes:
+              - ReadWriteOnce
+            capacity:
+              storage: 1Gi
+            hostPath:
+              path: /data/mysql-pv/
+
+    - name: mysql - volume claim
+      community.kubernetes.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: PersistentVolumeClaim
+          metadata:
+            name: mysql-pvc
+            namespace: default
+          spec:
+            volumeMode: Filesystem
+            accessModes:
+              - ReadWriteOnce
+            resources:
+              requests:
+                storage: 1Gi
+            selector:
+              matchLabels:
+                storage-tier: database
+
+    - name: mysql - config
+      community.kubernetes.k8s:
+        state: present
+        definition:
+          apiVersion: v1
+          kind: ConfigMap
+          metadata:
+            name: mysql-configmap
+            namespace: default
+          data:
+            mysql-database: mysql-service
+
+    - name: mysql - Deployment
+      community.kubernetes.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: mysql-deployment
+            namespace: default
+            labels:
+              app: mysql
+          spec:
+            replicas: 1
+            selector:
+              matchLabels:
+                app: mysql
+            template:
+              metadata:
+                labels:
+                  app: mysql
+              spec:
+                volumes:
+                  - name: db-volume
+                    persistentVolumeClaim:
+                      claimName: mysql-pvc
+                containers:
+                  - name: mysql
+                    image: mysql:5.7
+                    volumeMounts:
+                      - name: db-volume
+                        mountPath: "/var/lib/mysql/"
+                    ports:
+                      - containerPort: 3306
+                    env:
+                      - name: MYSQL_ROOT_PASSWORD
+                        valueFrom:
+                          secretKeyRef:
+                            name: mysql-secret
+                            key: mysql-root-password
+                      - name: MYSQL_DATABASE
+                        valueFrom:
+                          configMapKeyRef:
+                            name: mysql-configmap
+                            key: mysql-database
+  tags:
+    - local

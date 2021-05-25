@@ -18,12 +18,12 @@
   roles:
     - { role: k8s-cluster-init/masters-init-cloud }
 
-- name: k8s-cluster-init-master
+- name: k8s-cluster-init - .kube config directory creation + copy
   hosts: masters
   roles:
     - { role: k8s-cluster-init/masters-init }
 
-- name: k8s-cluster-init-cloud-provider
+- name: k8s-cluster-init - AWS controller setup
   hosts: cloud_masters
   roles:
     - { role: k8s-cluster-init/cloud-provider-setup }
@@ -37,15 +37,11 @@
   hosts: masters
   roles:
     - { role: k8s-cluster-init/masters-generate-join }
-  tags:
-    - join
 
 - name: k8s-cluster-init-worker
   hosts: workers
   roles:
     - { role: k8s-cluster-init/workers }
-  tags:
-    - join
 
 - name: k8s-cluster-masters-local-loadbalancer
   hosts: local_masters

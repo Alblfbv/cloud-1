@@ -66,7 +66,7 @@
   become: yes
   lineinfile:
     path: "/etc/systemd/system/kubelet.service.d/10-kubeadm.conf"
-    line: 'Environment="KUBELET_EXTRA_ARGS=--node-ip={{ private_ip_address }} --cloud-provider=external"'
+    line: 'Environment="KUBELET_EXTRA_ARGS=--node-ip={{ private_ip_address }} --cloud-provider={{ cloud_provider }}"'
     regexp: "KUBELET_EXTRA_ARGS="
     insertafter: EOF
     state: present
@@ -75,3 +75,17 @@
 
 - name: Flush handlers
   meta: flush_handlers
+
+- name: Install pip3 for next task
+  become: yes
+  ansible.builtin.apt:
+    name: python3-pip
+    state: present
+    update_cache: yes
+
+- name: Install OpenShift for Ansible k8s manipulations
+  become: yes
+  pip:
+    executable: pip3
+    name: openshift
+    state: present

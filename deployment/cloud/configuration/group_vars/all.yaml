@@ -1,3 +1,4 @@
 ansible_user: "ubuntu"
 user: "ubuntu"
 network_interface: "eth0"
+cloud_provider: "external"

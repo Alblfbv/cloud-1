@@ -27,14 +27,11 @@
     update_cache: yes
 
 - name: Add ingress-nginx helm repository
-  become: yes
   community.kubernetes.helm_repository:
     name: ingress-nginx
     repo_url: https://kubernetes.github.io/ingress-nginx
-    state: present
 
 - name: Install ingress-controller
-  become: yes
   community.kubernetes.helm:
     name: my-ingress
     state: present

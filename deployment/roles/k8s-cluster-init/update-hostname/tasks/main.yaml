@@ -4,12 +4,8 @@
     url: http://169.254.169.254/latest/meta-data/local-hostname
     return_content: yes
   register: hostname
-  tags:
-    - hostname
 
 - name: set proper aws hostname
   become: yes
   command:
     cmd: "hostnamectl set-hostname {{ hostname.content }}"
-  tags:
-    - hostname

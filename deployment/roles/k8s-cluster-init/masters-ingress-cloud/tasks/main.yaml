@@ -6,8 +6,6 @@
       - node
       - master
       - node-role.kubernetes.io/master:NoSchedule-
-  tags:
-    - skip
 
 - name: ingress-controller
   command:
