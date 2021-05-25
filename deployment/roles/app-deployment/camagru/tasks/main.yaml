@@ -20,6 +20,12 @@
               tier: backend
           spec:
             volumes:
+              - name: php-database-conf
+                configMap:
+                  name: php-database-conf
+                  items:
+                    - key: config
+                      path: mustMatch
               - name: nginx-conf
                 configMap:
                   name: nginx-conf
@@ -54,6 +60,9 @@
                     mountPath: "/assets-copy"
                   - name: images-volume
                     mountPath: "/code/userImages/"
+                  - name: php-database-conf
+                    mountPath: /code/config/database.php
+                    subPath: mustMatch
                 lifecycle:
                   postStart:
                     exec:
@@ -205,3 +214,51 @@
                 fastcgi_param DOCUMENT_ROOT /code;
               }
           }
+
+- name: php database configuration definition - local
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: php-database-conf
+        namespace: default
+        labels:
+          tier: backend
+      data:
+        config: |
+          <?php
+            $DB_HOST = "mysql-service";
+            $DB_PORT = "3306";
+            $DB_NAME = "camagru";
+            $DB_DSN_EXISTS = "mysql:host=" . $DB_HOST . ";port=" . $DB_PORT . ";dbname=" . $DB_NAME;
+            $DB_DSN_CREATE = "mysql:host=" . $DB_HOST . ";port=" . $DB_PORT;
+            $DB_USER = ***REMOVED***;
+            $DB_PASSWORD = "***REMOVED***";
+  tags:
+    - local
+
+- name: php database configuration definition - cloud
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: php-database-conf
+        namespace: default
+        labels:
+          tier: backend
+      data:
+        config: |
+          <?php
+            $DB_HOST = "terraform-20210524150219579800000001.cax0w8mzibuh.eu-west-3.rds.amazonaws.com";
+            $DB_PORT = "3306";
+            $DB_NAME = "camagru";
+            $DB_DSN_EXISTS = "mysql:host=" . $DB_HOST . ";port=" . $DB_PORT . ";dbname=" . $DB_NAME;
+            $DB_DSN_CREATE = "mysql:host=" . $DB_HOST . ";port=" . $DB_PORT;
+            $DB_USER = ***REMOVED***;
+            $DB_PASSWORD = "***REMOVED***";
+  tags:
+    - cloud

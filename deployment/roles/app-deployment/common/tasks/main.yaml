@@ -9,12 +9,11 @@
         namespace: default
         annotations:
           kubernetes.io/ingress.class: nginx
-      spec:
-        tls:
-          - hosts:
-              - allefebv.click
-              - db.allefebv.click
-            secretName: camagru-secret-tls
+          nginx.ingress.kubernetes.io/ssl-redirect: "true"
+          nginx.ingress.kubernetes.io/configuration-snippet: |
+            if ($http_x_forwarded_proto = 'http') {
+              return 301 https://$host$request_uri;
+            }
         rules:
           - host: allefebv.click
             http:
@@ -36,3 +35,5 @@
                       name: pma-service
                       port:
                         number: 80
+  tags:
+    - http

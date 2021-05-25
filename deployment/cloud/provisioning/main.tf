@@ -412,6 +412,27 @@ resource "aws_iam_policy" "master-policy" {
   }
 }
 
+resource "aws_iam_policy" "s3-policy" {
+  name = "s3-policy"
+  policy = jsonencode({
+    "Version" : "2012-10-17",
+    "Statement" : [
+      {
+        "Effect" : "Allow",
+        "Action" : [
+          "s3:PutObject",
+          "s3:GetObject",
+        ],
+        "Resource" : "*"
+      }
+    ]
+  })
+
+  tags = {
+    project = "cloud-1"
+  }
+}
+
 resource "aws_iam_policy_attachment" "master-role-policy-attachment" {
   name       = "master-role-policy-attachment"
   roles      = [aws_iam_role.master-role.name]
@@ -422,6 +443,12 @@ resource "aws_iam_policy_attachment" "worker-role-policy-attachment" {
   name       = "worker-role-policy-attachment"
   roles      = [aws_iam_role.worker-role.name]
   policy_arn = aws_iam_policy.worker-policy.arn
+}
+
+resource "aws_iam_policy_attachment" "worker-role-s3-policy-attachment" {
+  name       = "worker-role-s3-policy-attachment"
+  roles      = [aws_iam_role.worker-role.name]
+  policy_arn = aws_iam_policy.s3-policy.arn
 }
 
 resource "aws_iam_instance_profile" "master-profile" {
@@ -483,16 +510,16 @@ resource "aws_instance" "kubernetes_worker-1" {
 }
 
 resource "aws_db_instance" "cloud1-db" {
-  allocated_storage    = 5
-  engine               = "mysql"
-  engine_version       = "5.7"
-  instance_class       = "db.t2.micro"
-  username             = "***REMOVED***"
-  password             = "***REMOVED***"
-  db_subnet_group_name = aws_db_subnet_group.database.name
-  vpc_security_group_ids = aws_security_group.allow_db_connection.id
-  skip_final_snapshot  = true
-  
+  allocated_storage      = 5
+  engine                 = "mysql"
+  engine_version         = "5.7"
+  instance_class         = "db.t2.micro"
+  username               = "***REMOVED***"
+  password               = "***REMOVED***"
+  db_subnet_group_name   = aws_db_subnet_group.database.name
+  vpc_security_group_ids = [aws_security_group.allow_db_connection.id]
+  skip_final_snapshot    = true
+
   tags = {
     Name                               = "cloud1-db"
     "kubernetes.io/cluster/kubernetes" = "owned"
