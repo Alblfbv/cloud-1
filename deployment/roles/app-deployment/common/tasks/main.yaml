@@ -14,6 +14,7 @@
             if ($http_x_forwarded_proto = 'http') {
               return 301 https://$host$request_uri;
             }
+      spec:
         rules:
           - host: allefebv.click
             http:
@@ -37,3 +38,46 @@
                         number: 80
   tags:
     - http
+    - cloud
+
+- name: Ingress Rules for db and php apps
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      apiVersion: networking.k8s.io/v1
+      kind: Ingress
+      metadata:
+        name: ingress-rules
+        namespace: default
+        annotations:
+          kubernetes.io/ingress.class: nginx
+      spec:
+        tls:
+          - hosts:
+              - allefebv.click
+              - db.allefebv.click
+            secretName: camagru-secret-tls
+        rules:
+          - host: allefebv.click
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: app-service
+                      port:
+                        number: 80
+          - host: db.allefebv.click
+            http:
+              paths:
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: pma-service
+                      port:
+                        number: 80
+  tags:
+    - http
+    - local
