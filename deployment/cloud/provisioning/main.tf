@@ -16,17 +16,41 @@ resource "aws_vpc" "k8s-vpc" {
   tags = {
     Name                               = "k8s"
     "kubernetes.io/cluster/kubernetes" = "owned"
+    project                            = "cloud-1"
   }
 }
 
-resource "aws_subnet" "k8s-subnet" {
+
+resource "aws_subnet" "k8s-subnet1" {
   vpc_id            = aws_vpc.k8s-vpc.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "eu-west-3a"
 
   tags = {
-    Name                               = "k8s-subnet"
+    Name                               = "k8s-subnet1"
     "kubernetes.io/cluster/kubernetes" = "owned"
+    project                            = "cloud-1"
+  }
+}
+
+resource "aws_subnet" "k8s-subnet2" {
+  vpc_id            = aws_vpc.k8s-vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "eu-west-3b"
+
+  tags = {
+    Name                               = "k8s-subnet2"
+    "kubernetes.io/cluster/kubernetes" = "owned"
+    project                            = "cloud-1"
+  }
+}
+
+resource "aws_db_subnet_group" "database" {
+  name       = "database-subnet"
+  subnet_ids = [aws_subnet.k8s-subnet1.id, aws_subnet.k8s-subnet2.id]
+
+  tags = {
+    project = "cloud-1"
   }
 }
 
@@ -36,6 +60,7 @@ resource "aws_internet_gateway" "k8s-gw" {
   tags = {
     Name                               = "k8s"
     "kubernetes.io/cluster/kubernetes" = "owned"
+    project                            = "cloud-1"
   }
 }
 
@@ -50,12 +75,40 @@ resource "aws_route_table" "k8s-routing" {
   tags = {
     Name                               = "k8s"
     "kubernetes.io/cluster/kubernetes" = "owned"
+    project                            = "cloud-1"
   }
 }
 
 resource "aws_route_table_association" "a" {
-  subnet_id      = aws_subnet.k8s-subnet.id
+  subnet_id      = aws_subnet.k8s-subnet1.id
   route_table_id = aws_route_table.k8s-routing.id
+}
+
+resource "aws_security_group" "allow_db_connection" {
+  name        = "allow_db_connection"
+  description = "Allow HTTP/HTTPS/SSH inbound traffic"
+  vpc_id      = aws_vpc.k8s-vpc.id
+
+  ingress {
+    description = "DB connection"
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/16"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name                               = "allow_web_ssh"
+    "kubernetes.io/cluster/kubernetes" = "owned"
+    project                            = "cloud-1"
+  }
 }
 
 resource "aws_security_group" "allow_web_ssh" {
@@ -145,19 +198,28 @@ resource "aws_security_group" "allow_web_ssh" {
   tags = {
     Name                               = "allow_web_ssh"
     "kubernetes.io/cluster/kubernetes" = "owned"
+    project                            = "cloud-1"
   }
 }
 
 resource "aws_network_interface" "master-eni" {
-  subnet_id       = aws_subnet.k8s-subnet.id
+  subnet_id       = aws_subnet.k8s-subnet1.id
   private_ips     = ["10.0.1.100"]
   security_groups = [aws_security_group.allow_web_ssh.id]
+
+  tags = {
+    project = "cloud-1"
+  }
 }
 
 resource "aws_network_interface" "worker-1-eni" {
-  subnet_id       = aws_subnet.k8s-subnet.id
+  subnet_id       = aws_subnet.k8s-subnet1.id
   private_ips     = ["10.0.1.110"]
   security_groups = [aws_security_group.allow_web_ssh.id]
+
+  tags = {
+    project = "cloud-1"
+  }
 }
 
 resource "aws_eip" "master-eip" {
@@ -167,6 +229,10 @@ resource "aws_eip" "master-eip" {
   depends_on = [
     aws_internet_gateway.k8s-gw
   ]
+
+  tags = {
+    project = "cloud-1"
+  }
 }
 
 resource "aws_eip" "worker-1-eip" {
@@ -176,11 +242,20 @@ resource "aws_eip" "worker-1-eip" {
   depends_on = [
     aws_internet_gateway.k8s-gw
   ]
+
+  tags = {
+    project = "cloud-1"
+  }
 }
 
 resource "aws_key_pair" "deployer" {
   key_name   = "ansible-key"
   public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQC/3pxOFSZJSTieCcQfUJCHtJcwRyNMpzsPlnHmsJw63psufZNV5O5+b46Fvo1Eccb6vPpmzV4wg7aeyE062DjCHbpiL8XA0JFAgYUfUSQzLi6xkAXeXa1aISiadykE3fdc5V/zk5XKDqBbK657e131HEwEUDkZI9gD5tyli1MUG81VnVHDbCYiO2EbVSgHmIIlKw295yhbTLC3MQRletmTrQPAhjTF8xhg/bUQplLXGvaz6KpznAk8VM7Tf1eRd0gIPPWgcHLHZodyAXuDKAKZa5uFv/YNvVPrJ/M48ULMfDk/mlpRroww5JZvAvjojMfCOmed8YmZ6aXeo39rpv+eKUSKaybwfFRYq17EZxjw0uNM9T3sNT+i09Dx2NKEWR+FS3FsCNQkXjaNUpFG2nQmpqd4gcrxAJLeZKEo2Y8SFAON11BDJddXNvTgRcRsumlZg5seOYYxb+euz5YI9B2ztxALmykw+0q7VYqBn8T4DNbHoAjd9PCd+1L6KNWu3GM="
+
+  tags = {
+    project = "cloud-1"
+  }
+
 }
 
 resource "aws_iam_role" "master-role" {
@@ -199,6 +274,10 @@ resource "aws_iam_role" "master-role" {
       }
     ]
   })
+
+  tags = {
+    project = "cloud-1"
+  }
 }
 
 resource "aws_iam_role" "worker-role" {
@@ -218,6 +297,10 @@ resource "aws_iam_role" "worker-role" {
         }
       ]
   })
+
+  tags = {
+    project = "cloud-1"
+  }
 }
 
 
@@ -245,6 +328,10 @@ resource "aws_iam_policy" "worker-policy" {
       }
     ]
   })
+
+  tags = {
+    project = "cloud-1"
+  }
 }
 
 resource "aws_iam_policy" "master-policy" {
@@ -319,6 +406,10 @@ resource "aws_iam_policy" "master-policy" {
       }
     ]
   })
+
+  tags = {
+    project = "cloud-1"
+  }
 }
 
 resource "aws_iam_policy_attachment" "master-role-policy-attachment" {
@@ -336,11 +427,19 @@ resource "aws_iam_policy_attachment" "worker-role-policy-attachment" {
 resource "aws_iam_instance_profile" "master-profile" {
   name = "master-profile"
   role = aws_iam_role.master-role.name
+
+  tags = {
+    project = "cloud-1"
+  }
 }
 
 resource "aws_iam_instance_profile" "worker-profile" {
   name = "worker-profile"
   role = aws_iam_role.worker-role.name
+
+  tags = {
+    project = "cloud-1"
+  }
 }
 
 resource "aws_instance" "kubernetes_master" {
@@ -380,5 +479,33 @@ resource "aws_instance" "kubernetes_worker-1" {
     group                              = "workers"
     project                            = "cloud-1"
     "kubernetes.io/cluster/kubernetes" = "owned"
+  }
+}
+
+resource "aws_db_instance" "cloud1-db" {
+  allocated_storage    = 5
+  engine               = "mysql"
+  engine_version       = "5.7"
+  instance_class       = "db.t2.micro"
+  username             = "***REMOVED***"
+  password             = "***REMOVED***"
+  db_subnet_group_name = aws_db_subnet_group.database.name
+  vpc_security_group_ids = aws_security_group.allow_db_connection.id
+  skip_final_snapshot  = true
+  
+  tags = {
+    Name                               = "cloud1-db"
+    "kubernetes.io/cluster/kubernetes" = "owned"
+    project                            = "cloud-1"
+  }
+}
+
+resource "aws_s3_bucket" "cloud1-bucket" {
+  bucket = "cloud1-bucket"
+
+  tags = {
+    Name                               = "cloud1-bucket"
+    "kubernetes.io/cluster/kubernetes" = "owned"
+    project                            = "cloud-1"
   }
 }
