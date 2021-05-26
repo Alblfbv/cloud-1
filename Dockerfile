@@ -12,7 +12,6 @@ RUN docker-php-ext-install pdo pdo_mysql gd
 
 COPY --from=composer:latest /usr/bin/composer /usr/local/bin/composer
 
-COPY ./docker-conf/xdebug.ini           /usr/local/etc/php/conf.d/xdebug.ini
 RUN pecl install xdebug 
 RUN docker-php-ext-enable xdebug
 

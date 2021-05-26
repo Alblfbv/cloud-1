@@ -6,6 +6,8 @@
       - node
       - master
       - node-role.kubernetes.io/master:NoSchedule-
+  tags:
+    - first-run
 
 - name: Ingress k8s manifest - Namespace
   community.kubernetes.k8s:
@@ -112,6 +114,8 @@
             - create
             - patchterraform-20210525144032142100000001.cax0w8mzibuh.eu-west-3.rds.amazonaws.com
             - networking.k8s.io # k8s 1.14+
+        - apiGroups:
+            - ""
           resources:
             - ingresses/status
           verbs:
@@ -297,9 +301,10 @@
       kind: Service
       metadata:
         annotations:
-          service.beta.kubernetes.io/aws-load-balancer-backend-protocol: tcp
-          service.beta.kubernetes.io/aws-load-balancer-cross-zone-load-balancing-enabled: "true"
           service.beta.kubernetes.io/aws-load-balancer-type: nlb
+          service.beta.kubernetes.io/aws-load-balancer-backend-protocol: "http"
+          service.beta.kubernetes.io/aws-load-balancer-ssl-ports: "443"
+          service.beta.kubernetes.io/aws-load-balancer-ssl-cert: "arn:aws:acm:eu-west-3:843020778154:certificate/2019c727-46b9-47c7-9b59-7d0c3b10202d"
         labels:
           helm.sh/chart: ingress-nginx-3.30.0
           app.kubernetes.io/name: ingress-nginx

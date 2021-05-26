@@ -12,7 +12,7 @@ use \Exception;
 use Aws\S3\S3Client;
 use Aws\Exception\AwsException;
 use Aws\S3\ObjectUploader;
-use Aws\Credentials\Credentials;
+use Aws\Credentials\CredentialProvider;
 
 class ControllerEditor
 {
@@ -99,7 +99,8 @@ class ControllerEditor
     {
         $bucket = 'cloud1-bucket';
         $this->_imageRepository = new ImageRepository;
-        $credentials = new Credentials(AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY);
+        $provider = CredentialProvider::defaultProvider();
+        $creds = $provider()->wait();
 
         $imgUrl = $this->json['save'];
         $imgUrl = base64_decode($imgUrl);
@@ -112,11 +113,10 @@ class ControllerEditor
         $this->_imageRepository->add($img);
         file_put_contents($_SERVER['DOCUMENT_ROOT'] . $imgPathFs, $imgUrl);
         try {
-            //Create a S3Client
             $s3Client = new S3Client([
                 'region' => 'eu-west-3',
                 'version' => 'latest',
-                'credentials' => $credentials,
+                'credentials' => $creds,
             ]);
             $result = $s3Client->putObject([
                 'Bucket' => $bucket,
@@ -127,7 +127,6 @@ class ControllerEditor
         } catch (S3Exception $e) {
             echo $e->getMessage() . "\n";
         }
-
         \http_response_code(200);
     }
 }

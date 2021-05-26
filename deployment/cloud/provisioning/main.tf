@@ -422,6 +422,7 @@ resource "aws_iam_policy" "s3-policy" {
         "Action" : [
           "s3:PutObject",
           "s3:GetObject",
+          "s3:PutObjectAcl",
         ],
         "Resource" : "*"
       }
@@ -528,7 +529,8 @@ resource "aws_db_instance" "cloud1-db" {
 }
 
 resource "aws_s3_bucket" "cloud1-bucket" {
-  bucket = "cloud1-bucket"
+  bucket        = "cloud1-bucket"
+  force_destroy = true
 
   tags = {
     Name                               = "cloud1-bucket"

@@ -1,4 +1,4 @@
-- name: Ingress Rules for db and php apps
+- name: cloud - Ingress Rules for db and php apps
   community.kubernetes.k8s:
     state: present
     definition:
@@ -16,7 +16,7 @@
             }
       spec:
         rules:
-          - host: allefebv.click
+          - host: "{{ app_host }}"
             http:
               paths:
                 - path: /
@@ -26,7 +26,7 @@
                       name: app-service
                       port:
                         number: 80
-          - host: db.allefebv.click
+          - host: "{{ pma_host }}"
             http:
               paths:
                 - path: /
@@ -40,7 +40,7 @@
     - http
     - cloud
 
-- name: Ingress Rules for db and php apps
+- name: local - Ingress Rules for db and php apps
   community.kubernetes.k8s:
     state: present
     definition:
@@ -54,11 +54,11 @@
       spec:
         tls:
           - hosts:
-              - allefebv.click
-              - db.allefebv.click
+              - "{{ app_host }}"
+              - "{{ pma_host }}"
             secretName: camagru-secret-tls
         rules:
-          - host: allefebv.click
+          - host: "{{ app_host }}"
             http:
               paths:
                 - path: /
@@ -68,7 +68,7 @@
                       name: app-service
                       port:
                         number: 80
-          - host: db.allefebv.click
+          - host: "{{ pma_host }}"
             http:
               paths:
                 - path: /

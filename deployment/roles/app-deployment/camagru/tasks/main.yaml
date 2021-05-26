@@ -32,6 +32,12 @@
                   items:
                     - key: config
                       path: site.conf
+              - name: xdebug-conf
+                configMap:
+                  name: xdebug-conf
+                  items:
+                    - key: config
+                      path: mustMatch
               - name: static-assets
                 emptyDir: {}
               - name: images-volume
@@ -62,6 +68,9 @@
                     mountPath: "/code/userImages/"
                   - name: php-database-conf
                     mountPath: /code/config/database.php
+                    subPath: mustMatch
+                  - name: xdebug-conf
+                    mountPath: "/usr/local/etc/php/conf.d/xdebug.ini"
                     subPath: mustMatch
                 lifecycle:
                   postStart:
@@ -262,3 +271,23 @@
             $DB_PASSWORD = "***REMOVED***";
   tags:
     - cloud
+
+- name: xdebug conf
+  community.kubernetes.k8s:
+    state: present
+    definition:
+      kind: ConfigMap
+      apiVersion: v1
+      metadata:
+        name: xdebug-conf
+        namespace: default
+        labels:
+          tier: backend
+      data:
+        config: |
+          xdebug.idekey=VSCODE
+          xdebug.client_host=4.tcp.ngrok.io
+          xdebug.client_port=18813
+          xdebug.log=/var/log/xdebug.log
+          xdebug.mode=debug
+          xdebug.start_with_request=yes
