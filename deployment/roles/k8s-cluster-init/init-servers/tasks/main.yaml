@@ -50,6 +50,8 @@
     name: "{{ item }}"
     state: present
   loop: "{{ kernel_modules }}"
+  tags:
+    - restart
 
 - name: update sysctl file
   become: yes

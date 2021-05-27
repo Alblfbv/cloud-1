@@ -510,13 +510,22 @@ resource "aws_instance" "kubernetes_worker-1" {
   }
 }
 
+data "aws_kms_secrets" "creds" {
+  secret {
+    name    = "db"
+    payload = file("${path.module}/../../db-creds.yml.encrypted")
+  }
+}
+locals {
+  db_creds = yamldecode(data.aws_kms_secrets.creds.plaintext["db"])
+}
 resource "aws_db_instance" "cloud1-db" {
   allocated_storage      = 5
   engine                 = "mysql"
   engine_version         = "5.7"
   instance_class         = "db.t2.micro"
-  username               = "***REMOVED***"
-  password               = "***REMOVED***"
+  username               = local.db_creds.username
+  password               = local.db_creds.password
   db_subnet_group_name   = aws_db_subnet_group.database.name
   vpc_security_group_ids = [aws_security_group.allow_db_connection.id]
   skip_final_snapshot    = true

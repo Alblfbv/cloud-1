@@ -3,3 +3,5 @@ alban_accessKeys.csv
 deployment/cloud/provisioning/*
 !deployment/cloud/provisioning/main.tf
 .vscode
+filter_plugins/__pycache__/
+secrets/

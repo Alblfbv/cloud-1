@@ -133,7 +133,7 @@
         name: dockerhub-secret
       type: kubernetes.io/dockerconfigjson
       data:
-        .dockerconfigjson: ***REMOVED***
+        .dockerconfigjson: "{{ lookup('file', 'dockerhub-secret.encrypted') | kms_decrypt }}"
 
 - name: Volume creation for images storage
   community.kubernetes.k8s:
@@ -224,31 +224,11 @@
               }
           }
 
-- name: php database configuration definition - local
-  community.kubernetes.k8s:
-    state: present
-    definition:
-      kind: ConfigMap
-      apiVersion: v1
-      metadata:
-        name: php-database-conf
-        namespace: default
-        labels:
-          tier: backend
-      data:
-        config: |
-          <?php
-            $DB_HOST = "mysql-service";
-            $DB_PORT = "3306";
-            $DB_NAME = "camagru";
-            $DB_DSN_EXISTS = "mysql:host=" . $DB_HOST . ";port=" . $DB_PORT . ";dbname=" . $DB_NAME;
-            $DB_DSN_CREATE = "mysql:host=" . $DB_HOST . ";port=" . $DB_PORT;
-            $DB_USER = ***REMOVED***;
-            $DB_PASSWORD = "***REMOVED***";
-  tags:
-    - local
+- name: db creds retrieval from encrypted file + AWS KMS
+  set_fact:
+    db_creds: "{{ lookup('file', 'db-creds.yml.encrypted') | kms_decrypt | from_yaml }}"
 
-- name: php database configuration definition - cloud
+- name: php database configuration definition - local
   community.kubernetes.k8s:
     state: present
     definition:
@@ -267,10 +247,8 @@
             $DB_NAME = "camagru";
             $DB_DSN_EXISTS = "mysql:host=" . $DB_HOST . ";port=" . $DB_PORT . ";dbname=" . $DB_NAME;
             $DB_DSN_CREATE = "mysql:host=" . $DB_HOST . ";port=" . $DB_PORT;
-            $DB_USER = ***REMOVED***;
-            $DB_PASSWORD = "***REMOVED***";
-  tags:
-    - cloud
+            $DB_USER = "{{ db_creds.username }}";
+            $DB_PASSWORD = "{{ db_creds.password }}";
 
 - name: xdebug conf
   community.kubernetes.k8s:
@@ -286,8 +264,8 @@
       data:
         config: |
           xdebug.idekey=VSCODE
-          xdebug.client_host=4.tcp.ngrok.io
-          xdebug.client_port=18813
+          xdebug.client_host=0.tcp.ngrok.io
+          xdebug.client_port=10994
           xdebug.log=/var/log/xdebug.log
           xdebug.mode=debug
           xdebug.start_with_request=yes

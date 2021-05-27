@@ -8,5 +8,3 @@
   become: yes
   command:
     cmd: kubeadm init --ignore-preflight-errors=all --cri-socket /run/containerd/containerd.sock  --node-name="{{ tags.Name }}" --pod-network-cidr="10.244.0.0/16"
-  tags:
-    - cluster-create
