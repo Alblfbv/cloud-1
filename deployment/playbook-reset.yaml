@@ -1,0 +1,4 @@
+- name: k8s-cluster-reset
+  hosts: all
+  roles:
+    - { role: k8s-cluster-reset, tags: ["reset"] }

@@ -46,3 +46,7 @@
       hostPort:
         enabled: true
     kubeconfig: "/home/{{ user }}/.kube/config"
+
+- name: Workaround admission issue
+  command:
+    cmd: kubectl delete ValidatingWebhookConfiguration my-ingress-ingress-nginx-admission

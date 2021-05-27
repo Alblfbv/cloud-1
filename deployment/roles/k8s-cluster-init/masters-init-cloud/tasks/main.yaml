@@ -1,9 +1,3 @@
-# - name: Copy kubeadm cluster config file to master
-#   ansible.builtin.copy:
-#     force: yes
-#     src: ./roles/k8s-cluster-init/masters-init-cloud/files/config.yaml
-#     dest: $HOME/config.yaml
-
 - name: Create kubernetes cluster with kubeadm tool
   become: yes
   command:

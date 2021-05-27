@@ -1,0 +1,10 @@
+- name: reset cluster with kubeadm
+  become: yes
+  command:
+    cmd: kubeadm reset -f
+
+- name: remove CNI (flannel) config
+  become: yes
+  ansible.builtin.file:
+    path: /etc/cni/net.d
+    state: absent

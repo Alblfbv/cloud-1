@@ -1,0 +1,67 @@
+- name: k8s-cluster-init-servers
+  hosts: all
+  roles:
+    - { role: k8s-cluster-init/init-servers, tags: ["config"] }
+
+- name: k8s-cluster-init-update-hostnames
+  hosts: aws_ec2
+  roles:
+    - { role: k8s-cluster-init/update-hostname, tags: ["config"] }
+
+- name: k8s-cluster-init-master-local
+  hosts: local_masters
+  roles:
+    - { role: k8s-cluster-init/masters-init-local, tags: ["config"] }
+
+- name: k8s-cluster-init-master-cloud
+  hosts: cloud_masters
+  roles:
+    - { role: k8s-cluster-init/masters-init-cloud, tags: ["config"] }
+
+- name: k8s-cluster-init - .kube config directory creation + copy
+  hosts: masters
+  roles:
+    - { role: k8s-cluster-init/masters-init, tags: ["config"] }
+
+- name: k8s-cluster-init - AWS controller setup
+  hosts: cloud_masters
+  roles:
+    - { role: k8s-cluster-init/cloud-provider-setup, tags: ["config"] }
+
+- name: k8s-cluster-install-flannel
+  hosts: masters
+  roles:
+    - { role: k8s-cluster-init/masters-flannel, tags: ["config"] }
+
+- name: k8s-cluster-masters-join
+  hosts: masters
+  roles:
+    - { role: k8s-cluster-init/masters-generate-join, tags: ["config"] }
+
+- name: k8s-cluster-init-worker
+  hosts: workers
+  roles:
+    - { role: k8s-cluster-init/workers, tags: ["config"] }
+
+- name: k8s-cluster-masters-local-loadbalancer
+  hosts: local_masters
+  roles:
+    - { role: k8s-cluster-init/masters-metallb, tags: ["config"] }
+
+- name: k8s-cluster-masters-local-ingress
+  hosts: local_masters
+  roles:
+    - { role: k8s-cluster-init/masters-ingress-local, tags: ["config"] }
+
+- name: k8s-cluster-masters-cloud-ingress
+  hosts: cloud_masters
+  roles:
+    - { role: k8s-cluster-init/masters-ingress-cloud, tags: ["config"] }
+
+- name: k8s-app-deploy
+  hosts: masters
+  roles:
+    - { role: app-deployment/mysql, tags: ["deployment", "db"] }
+    - { role: app-deployment/k8s-dashboard, tags: ["deployment", "dashboard"] }
+    - { role: app-deployment/phpmyadmin, tags: ["deployment", "pma"] }
+    - { role: app-deployment/camagru, tags: ["deployment", "app"] }
